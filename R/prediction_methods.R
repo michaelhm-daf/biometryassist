@@ -174,10 +174,10 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
   pred.out <- emmeans::emmeans(model.obj, as.formula(paste("~", classify)), method="pairwise")
   
   # Use emmans embedded function for multiple comparisons
-  aov_compare <- emmeans:::cld.emmGrid(pred.out, details=TRUE, Letters = letters)#, adjust=adjust, alpha=alpha)
-  
-  # Define data frame for return object
-  aov_df <- as.data.frame(aov_compare$emmeans)
+  #aov_compare <- emmeans:::cld.emmGrid(pred.out, details=TRUE, Letters = letters)#, adjust=adjust, alpha=alpha)
+  aov_compare <- pairs(pred.out)#, adjust=adjust, alpha=alpha)
+  # convert pair-wise comparison table to a data framee
+  aov_compare <- as.data.frame(aov_compare)
   
   # Extract standard errors
   # define SED matrix
@@ -185,11 +185,11 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
   # obtain residual degrees of freedom matrix
   ndf <- matrix(NA, nrow=dim(aov_df)[1], ncol=dim(aov_df)[1])
   k <- 1 # define counter k
-  for(i in 2:dim(aov_df)[1]){
-    for (j in 1:(i-1)){
-      sed[i,j] <- aov_compare$comparisons$SE[k]
+  for(i in 1:(dim(aov_df)[1]-1) ){
+    for (j in (i+1):dim(aov_df)[1]){
+      sed[i,j] <- aov_compare$SE[k]
       sed[j,i] <- sed[i,j]
-      ndf[i,j] <- aov_compare$comparisons$df[k]
+      ndf[i,j] <- aov_compare$df[k]
       ndf[j,i] <- ndf[i,j]
       k <- k+1
     }
