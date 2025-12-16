@@ -301,7 +301,7 @@ test_that("multiple_comparisons output has a class of 'mct'", {
 test_that("Setting groups to FALSE disables letter groups", {
     output <- multiple_comparisons(dat.aov, classify = "Species")
     expect_true("groups" %in% colnames(output))
-    expect_equal(output$groups, c("a  ", " b ", "  c"))
+    expect_equal(output$groups, c("a", "b", "c"))
 
     output <- multiple_comparisons(dat.aov, classify = "Species", groups = FALSE)
     expect_false("groups" %in% colnames(output))
@@ -522,3 +522,29 @@ test_that("ApproxSE column is also preserved during rounding", {
     expect_false(any(output$ApproxSE == 0))
 })
 
+# test_that("Test that aov works when using Error() to including experimental design terms", {
+#     quiet(library(asreml))
+#     oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+#     output <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen")
+#     expect_equal(output$predicted.value,c(71.50,  80.00,  86.67,  89.67,  98.50,
+#                         108.50, 110.83, 114.67, 117.17, 118.50, 124.83, 126.83),
+#                  tolerance = 5e-2)
+#     expect_equal(output$groups,c("a     ", "ab    ", "abc e ", "abcd  ", "abcdef",
+#                    " bcdef", " bcdef", "  cdef", "   d f", "    ef", "     f", "     f"))
+# })
+# 
+# 
+# test_that("Test that aov works when using LSD method for multiple comparisons", {
+#   quiet(library(asreml))
+#   oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+#   output.aov <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen",
+#                                  method="LSD")
+#   output.asr <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen",
+#                                      method="LSD")
+#   
+#   expect_equal(output$predicted.value,c(71.50,  80.00,  86.67,  89.67,  98.50,
+#                                         108.50, 110.83, 114.67, 117.17, 118.50, 124.83, 126.83),
+#                tolerance = 5e-2)
+#   expect_equal(output$groups,c("a     ", "ab    ", "abc e ", "abcd  ", "abcdef",
+#                                " bcdef", " bcdef", "  cdef", "   d f", "    ef", "     f", "     f"))
+# })

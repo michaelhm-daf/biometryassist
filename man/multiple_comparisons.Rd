@@ -21,6 +21,7 @@ multiple_comparisons(
   rotation = 0,
   save = FALSE,
   savename = "predicted_values",
+  spaces = FALSE,
   order,
   pred.obj,
   pred,
@@ -59,6 +60,8 @@ multiple_comparisons(
 \item{save}{Logical (default \code{FALSE}). Save the predicted values to a csv file?}
 
 \item{savename}{A file name for the predicted values to be saved to. Default is \code{predicted_values}.}
+
+\item{spaces}{Logical (default \code{FALSE}). Include monospaced letters in grouping so that the grouping letters line up with a monospaced type font?}
 
 \item{order}{Deprecated. Use \code{descending} instead.}
 

@@ -18,6 +18,7 @@
 #' @param rotation Rotate the text output as Treatments within the plot. Allows for easier reading of long treatment labels. Number between 0 and 360 (inclusive) - default 0
 #' @param save Logical (default `FALSE`). Save the predicted values to a csv file?
 #' @param savename A file name for the predicted values to be saved to. Default is `predicted_values`.
+#' @param spaces Logical (default `FALSE`). Include monospaced letters in grouping so that the grouping letters line up with a monospaced type font?
 #' @param order Deprecated. Use `descending` instead.
 #' @param pred Deprecated. Use `classify` instead.
 #' @param pred.obj Deprecated. Predicted values are calculated within the function from version 1.0.1 onwards.
@@ -206,6 +207,7 @@ multiple_comparisons <- function(model.obj,
                                  rotation = 0,
                                  save = FALSE,
                                  savename = "predicted_values",
+                                 spaces = FALSE,
                                  order,
                                  pred.obj,
                                  pred,
@@ -252,7 +254,7 @@ multiple_comparisons <- function(model.obj,
 
     # Add letter groups if requested
     if (groups) {
-        pp <- add_letter_groups(pp, diffs, descending)
+        pp <- add_letter_groups(pp, diffs, descending, spaces)
     }
 
     # Calculate confidence intervals
@@ -482,10 +484,14 @@ apply_transformation <- function(pp, trans, offset, power) {
     return(pp)
 }
 
-add_letter_groups <- function(pp, diffs, descending) {
+add_letter_groups <- function(pp, diffs, descending, spaces) {
     ll <- multcompView::multcompLetters3("Names", "predicted.value", diffs, pp, reversed = !descending)
+    if(spaces==TRUE){
+      rr <- data.frame(groups = ll$monospacedLetters)
+    } else {
+      rr <- data.frame(groups = ll$Letters)
+    }
 
-    rr <- data.frame(groups = ll$monospacedLetters)
     rr$Names <- row.names(rr)
 
     pp <- merge(pp, rr)
