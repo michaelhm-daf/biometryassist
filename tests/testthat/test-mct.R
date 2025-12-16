@@ -522,29 +522,51 @@ test_that("ApproxSE column is also preserved during rounding", {
     expect_false(any(output$ApproxSE == 0))
 })
 
-# test_that("Test that aov works when using Error() to including experimental design terms", {
-#     quiet(library(asreml))
-#     oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
-#     output <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen")
-#     expect_equal(output$predicted.value,c(71.50,  80.00,  86.67,  89.67,  98.50,
-#                         108.50, 110.83, 114.67, 117.17, 118.50, 124.83, 126.83),
-#                  tolerance = 5e-2)
-#     expect_equal(output$groups,c("a     ", "ab    ", "abc e ", "abcd  ", "abcdef",
-#                    " bcdef", " bcdef", "  cdef", "   d f", "    ef", "     f", "     f"))
-# })
-# 
-# 
-# test_that("Test that aov works when using LSD method for multiple comparisons", {
-#   quiet(library(asreml))
-#   oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
-#   output.aov <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen",
-#                                  method="LSD")
-#   output.asr <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen",
-#                                      method="LSD")
-#   
-#   expect_equal(output$predicted.value,c(71.50,  80.00,  86.67,  89.67,  98.50,
-#                                         108.50, 110.83, 114.67, 117.17, 118.50, 124.83, 126.83),
-#                tolerance = 5e-2)
-#   expect_equal(output$groups,c("a     ", "ab    ", "abc e ", "abcd  ", "abcdef",
-#                                " bcdef", " bcdef", "  cdef", "   d f", "    ef", "     f", "     f"))
-# })
+test_that("Test that aov works when using Error() to including experimental design terms", {
+    quiet(library(asreml))
+    oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+    output <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen")
+    expect_equal(output$predicted.value,c(71.50,  80.00,  86.67,  89.67,  98.50,
+                        108.50, 110.83, 114.67, 117.17, 118.50, 124.83, 126.83),
+                 tolerance = 5e-2)
+    expect_equal(output$groups,c("a", "ab", "abce", "abcd", "abcdef",
+                   "bcdef", "bcdef", "cdef", "df", "ef", "f", "f"))
+})
+
+
+test_that("Test that aov works when using LSD method for multiple comparisons", {
+  quiet(library(asreml))
+  oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+  output.aov <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen",
+                                 method="LSD")
+  output.asr <- multiple_comparisons(model.obj=oats.asr, classify="Variety:Nitrogen",
+                                     method="LSD")
+  expect_equal(output.aov$groups,c("a", "ab", "abc", "bcd", "cde", "def", "efg",
+                                   "fg", "efg", "fg", "fg", "g"))
+  expect_equal(output.asr$groups,c("a", "ab", "abc", "bcd", "cde", "def", "efg",
+                                   "fg", "efg", "fg", "fg", "g"))
+})
+
+
+test_that("Does spaces=TRUE produce monspaced lettering?", {
+  quiet(library(asreml))
+  oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+  output.aov <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen", spaces=TRUE)
+  output.asr <- multiple_comparisons(model.obj=model.asr, classify = "Nitrogen:Variety", spaces=TRUE)
+  expect_equal(output.aov$groups,c("a     ", "ab    ", "abc e ", "abcd  ", "abcdef",
+                               " bcdef", " bcdef", "  cdef", "   d f", "    ef", "     f", "     f"))
+  # Difference are because of the ar1() structure fitted in the asreml model
+  expect_equal(output.asr$groups,c("ab    ", "a     ", "abc   ", "abcd  ", " bcde ",
+                  "   def", "  cdef", "   def", "  cdef", "    ef", "     f", "    ef"))
+})
+
+
+test_that("Does the order of factors labelled in the classify set affect the results of the model?", {
+  quiet(library(asreml))
+  oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+  output.aov1 <- expect_no_error(multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen"))
+  output.aov2 <- expect_no_error(multiple_comparisons(model.obj=oats.aov, classify="Nitrogen:Variety"))
+  output.asr1 <- expect_no_error(multiple_comparisons(model.obj=oats.asr, classify = "Variety:Nitrogen"))
+  output.asr2 <- expect_no_error(multiple_comparisons(model.obj=oats.asr, classify = "Nitrogen:Variety"))
+})
+
