@@ -197,7 +197,10 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
   # Add in row and column headings
   
   pred.out <- as.data.frame(pred.out)
-  #pred.out <- pred.out[, !grepl("CL", names(pred.out))]
+  # Remove columns with upper and lower confidence intervals
+  pred.out <- pred.out[, !grepl("CL", names(pred.out))]
+  # Remove columns with degrees of freedom
+  pred.out <- pred.out[, !grepl("df", names(pred.out))]
   
   # Rename columns for consistency
   pp <- pred.out
@@ -208,13 +211,14 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
   #diag(sed) <- NA
   
   # Process aliased treatments
-  aliased_result <- biometryassist:::process_aliased(pp, sed, classify)
+  aliased_result <- process_aliased(pp, sed, classify)
   pp <- aliased_result$predictions
   sed <- aliased_result$sed
   aliased_names <- aliased_result$aliased_names
   
   # Get denominator degrees of freedom
   #ndf <- pp$df[1]
+
   
   # Get response variable for plot label
   formula_text <- deparse(stats::formula(model.obj[[1]]))
