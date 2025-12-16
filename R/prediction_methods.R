@@ -13,7 +13,14 @@
 #' response variable label, and aliased names.
 #' @keywords internal
 get_predictions <- function(model.obj, classify, pred.obj = NULL, ...) {
+  # Currently a bug with method dispatch
+  if (inherits(model.obj, "aovlist")) {
+    get_predictions.aovlist(model.obj, classify, pred.obj, ...)
+  } else if (inherits(model.obj, "listof")) {
+    get_predictions.listof(model.obj, classify, pred.obj, ...)
+  } else {
     UseMethod("get_predictions")
+  }
 }
 
 #' @rdname predictions
@@ -21,9 +28,11 @@ get_predictions <- function(model.obj, classify, pred.obj = NULL, ...) {
 #' @keywords internal
 get_predictions.default <- function(model.obj, ...) {
     supported_types <- c("aov", "lm", "lmerMod", "lmerModLmerTest",
-                         "asreml")
+                         "asreml", "aovlist", "listof")
     stop("model.obj must be a linear (mixed) model object. Currently supported model types are: ",
-         paste(supported_types, collapse = ", "), call. = FALSE)
+         paste(supported_types, collapse = ", "),
+         "\nReceived object of class: ", paste(class(model.obj), collapse = ", "),
+         call. = FALSE)
 }
 
 #' @rdname predictions
@@ -148,6 +157,89 @@ get_predictions.lm <- function(model.obj, classify, ...) {
 
 #' @rdname predictions
 #'
+#' @importFrom emmeans emmeans
+#'
+#' @keywords internal
+get_predictions.aovlist <- function(model.obj, classify, ...) {
+  # Check if classify is in model terms
+  if(classify %!in% attr(stats::terms(model.obj), 'term.labels')) {
+    stop(classify, " is not a term in the model. Please check model specification.", call. = FALSE)
+  }
+  
+  # Set emmeans options
+  on.exit(options(emmeans = emmeans::emm_defaults))
+  emmeans::emm_options("msg.interaction" = FALSE, "msg.nesting" = FALSE)
+  
+  # Generate predictions
+  pred.out <- emmeans::emmeans(model.obj, as.formula(paste("~", classify)), method="pairwise")
+  
+  # Use emmans embedded function for multiple comparisons
+  aov_compare <- emmeans:::cld.emmGrid(pred.out, details=TRUE, Letters = letters)#, adjust=adjust, alpha=alpha)
+  
+  # Define data frame for return object
+  aov_df <- as.data.frame(aov_compare$emmeans)
+  
+  # Extract standard errors
+  # define SED matrix
+  sed <- matrix(NA, nrow=dim(aov_df)[1], ncol=dim(aov_df)[1])
+  # obtain residual degrees of freedom matrix
+  ndf <- matrix(NA, nrow=dim(aov_df)[1], ncol=dim(aov_df)[1])
+  k <- 1 # define counter k
+  for(i in 2:dim(aov_df)[1]){
+    for (j in 1:(i-1)){
+      sed[i,j] <- aov_compare$comparisons$SE[k]
+      sed[j,i] <- sed[i,j]
+      ndf[i,j] <- aov_compare$comparisons$df[k]
+      ndf[j,i] <- ndf[i,j]
+      k <- k+1
+    }
+  }
+  # Add in row and column headings
+  
+  pred.out <- as.data.frame(pred.out)
+  #pred.out <- pred.out[, !grepl("CL", names(pred.out))]
+  
+  # Rename columns for consistency
+  pp <- pred.out
+  names(pp)[names(pp) == "emmean"] <- "predicted.value"
+  names(pp)[names(pp) == "SE"] <- "std.error"
+  
+  # Set diagonals to NA
+  #diag(sed) <- NA
+  
+  # Process aliased treatments
+  aliased_result <- biometryassist:::process_aliased(pp, sed, classify)
+  pp <- aliased_result$predictions
+  sed <- aliased_result$sed
+  aliased_names <- aliased_result$aliased_names
+  
+  # Get denominator degrees of freedom
+  #ndf <- pp$df[1]
+  
+  # Get response variable for plot label
+  formula_text <- deparse(stats::formula(model.obj[[1]]))
+  ylab <- strsplit(formula_text, "~")[[1]][1]
+  ylab <- trimws(ylab)
+  
+  return(list(
+    predictions = pp,
+    sed = sed,
+    df = ndf,
+    ylab = ylab,
+    aliased_names = aliased_names
+  ))
+}
+
+#' @rdname predictions
+#'
+#' @keywords internal
+get_predictions.listof <- function(model.obj, classify, ...) {
+  get_predictions.aovlist(model.obj, classify, ...)
+}
+
+
+#' @rdname predictions
+#'
 #' @keywords internal
 get_predictions.lmerMod <- function(model.obj, classify, ...) {
     # Reuse lm method for common functionality
@@ -164,6 +256,7 @@ get_predictions.lmerMod <- function(model.obj, classify, ...) {
 get_predictions.lmerModLmerTest <- function(model.obj, classify, ...) {
     get_predictions.lmerMod(model.obj, classify, ...)
 }
+
 
 #' Process aliased treatments in predictions
 #'

@@ -6,6 +6,8 @@
 \alias{get_predictions.default}
 \alias{get_predictions.asreml}
 \alias{get_predictions.lm}
+\alias{get_predictions.aovlist}
+\alias{get_predictions.listof}
 \alias{get_predictions.lmerMod}
 \alias{get_predictions.lmerModLmerTest}
 \title{Get Predictions for Statistical Models}
@@ -17,6 +19,10 @@ get_predictions(model.obj, classify, pred.obj = NULL, ...)
 \method{get_predictions}{asreml}(model.obj, classify, pred.obj = NULL, ...)
 
 \method{get_predictions}{lm}(model.obj, classify, ...)
+
+\method{get_predictions}{aovlist}(model.obj, classify, ...)
+
+\method{get_predictions}{listof}(model.obj, classify, ...)
 
 \method{get_predictions}{lmerMod}(model.obj, classify, ...)
 

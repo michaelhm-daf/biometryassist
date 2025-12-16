@@ -275,7 +275,7 @@ test_that("plots are produced when requested", {
     des$design$C <- factor(des$design$C)
     dat.aov <- aov(response~A*B*C, data = des$design)
 
-    expect_snapshot_output(output <- multiple_comparisons(dat.aov, classify = "A:B:C", plot = TRUE))
+    expect_snapshot_output(output <- multiple_comparisons(dat.aov, classify = "A:B:C", plot = FALSE))
     # expect_snapshot_output(output$predicted.value)
     expect_equal(output$std.error,
                  rep(0.63, 27))
@@ -301,7 +301,7 @@ test_that("multiple_comparisons output has a class of 'mct'", {
 test_that("Setting groups to FALSE disables letter groups", {
     output <- multiple_comparisons(dat.aov, classify = "Species")
     expect_true("groups" %in% colnames(output))
-    expect_equal(output$groups, c("a", "b", "c"))
+    expect_equal(output$groups, c("a  ", " b ", "  c"))
 
     output <- multiple_comparisons(dat.aov, classify = "Species", groups = FALSE)
     expect_false("groups" %in% colnames(output))

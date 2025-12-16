@@ -5,6 +5,7 @@
 #' @param model.obj An ASReml-R or aov model object. Will likely also work with `lme` ([nlme::lme()]), `lmerMod` ([lme4::lmer()]) models as well.
 #' @param classify Name of predictor variable as string.
 #' @param sig The significance level, numeric between 0 and 1. Default is 0.05.
+#' @param method The multiple comparisons method used. Options currently available are `tukey`, `lsd` or `bonferroni`. Default is `tukey`.
 #' @param int.type The type of confidence interval to calculate. One of `ci`, `tukey`, `1se` or `2se`. Default is `ci`.
 #' @param trans Transformation that was applied to the response variable. One of `log`, `sqrt`, `logit`, `power` or `inverse`. Default is `NULL`.
 #' @param offset Numeric offset applied to response variable prior to transformation. Default is `NULL`. Use 0 if no offset was applied to the transformed data. See Details for more information.
@@ -192,6 +193,7 @@
 multiple_comparisons <- function(model.obj,
                                  classify,
                                  sig = 0.05,
+                                 method="tukey",
                                  int.type = "ci",
                                  trans = NULL,
                                  offset = NULL,
@@ -233,7 +235,7 @@ multiple_comparisons <- function(model.obj,
 
     # Get model-specific predictions and SED
     result <- get_predictions(model.obj, classify, pred.obj, ...)
-
+    
     pp <- result$predictions
     sed <- result$sed
     ndf <- result$df
@@ -244,7 +246,7 @@ multiple_comparisons <- function(model.obj,
     pp <- process_treatment_names(pp, classify)
 
     # Calculate critical values and determine pairs that are significantly different
-    result <- calculate_differences(pp, sed, ndf, sig)
+    result <- calculate_differences(pp, sed, ndf, sig, method)
     crit_val <- result$crit_val
     diffs <- result$diffs
 
@@ -344,7 +346,12 @@ validate_inputs <- function(sig, classify, model.obj, trans) {
     }
 
     # Check if the response variable is transformed in the model formula
-    model_formula <- stats::formula(model.obj)
+    if (inherits(model.obj, "aovlist")) {
+      model_formula <- stats::formula(model.obj[[1]])
+    } else{
+      model_formula <- stats::formula(model.obj)
+    }
+    
     if(inherits(model.obj, "asreml")) {
         response_part <- model_formula[[1]][[2]]
     }
@@ -389,9 +396,15 @@ process_treatment_names <- function(pp, classify, vars) {
     return(pp)
 }
 
-calculate_differences <- function(pp, sed, ndf, sig) {
+calculate_differences <- function(pp, sed, ndf, sig, method) {
     # Calculate the critical value
-    crit_val <- 1 / sqrt(2) * stats::qtukey((1 - sig), nrow(pp), ndf) * sed
+    crit_val <- switch(
+      tolower(method),
+      "tukey" = 1 / sqrt(2) * stats::qtukey((1 - sig), nrow(pp), ndf) * sed,
+      "lsd" = qt(sig/2, df=ndf, lower.tail=FALSE) * sed,
+      "bonferroni" = qt(sig/(2*length(pp)), df=ndf, lower.tail=FALSE) * sed,
+      stop("Invalid multiple comparisons method type. Use 'tukey', 'lsd', or 'bonferroni'")
+    )
 
     # Determine pairs that are significantly different
     diffs <- abs(outer(pp$predicted.value, pp$predicted.value, "-")) > crit_val
@@ -409,6 +422,10 @@ calculate_differences <- function(pp, sed, ndf, sig) {
 
 add_confidence_intervals <- function(pp, int.type, sig, ndf) {
     # Calculate confidence interval width
+    # If denominator df is a type matrix, use the max value (TEMPORARY SOLUTION!)
+    if(is.matrix(ndf)==TRUE){
+      ndf <- max(ndf, na.rm=TRUE)
+    }
     pp$ci <- switch(
         tolower(int.type),
         "ci" = stats::qt(p = sig/2, ndf, lower.tail = FALSE) * pp$std.error,
@@ -417,7 +434,6 @@ add_confidence_intervals <- function(pp, int.type, sig, ndf) {
         "2se" = 2 * pp$std.error,
         stop("Invalid int.type. Use 'ci', 'tukey', '1se', or '2se'.")
     )
-
     return(pp)
 }
 
@@ -469,7 +485,7 @@ apply_transformation <- function(pp, trans, offset, power) {
 add_letter_groups <- function(pp, diffs, descending) {
     ll <- multcompView::multcompLetters3("Names", "predicted.value", diffs, pp, reversed = !descending)
 
-    rr <- data.frame(groups = ll$Letters)
+    rr <- data.frame(groups = ll$monospacedLetters)
     rr$Names <- row.names(rr)
 
     pp <- merge(pp, rr)
@@ -551,6 +567,7 @@ add_attributes <- function(pp, ylab, crit_val, aliased_names) {
         attr(pp, 'HSD') <- crit_val[1, 2]
     } else {
         attr(pp, 'HSD') <- crit_val
+        attr(pp, 'average HSD') <- mean(crit_val, na.rm=TRUE)
     }
 
     return(pp)

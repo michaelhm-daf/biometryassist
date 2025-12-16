@@ -8,6 +8,7 @@ multiple_comparisons(
   model.obj,
   classify,
   sig = 0.05,
+  method = "tukey",
   int.type = "ci",
   trans = NULL,
   offset = NULL,
@@ -32,6 +33,8 @@ multiple_comparisons(
 \item{classify}{Name of predictor variable as string.}
 
 \item{sig}{The significance level, numeric between 0 and 1. Default is 0.05.}
+
+\item{method}{The multiple comparisons method used. Options currently available are \code{tukey}, \code{lsd} or \code{bonferroni}. Default is \code{tukey}.}
 
 \item{int.type}{The type of confidence interval to calculate. One of \code{ci}, \code{tukey}, \verb{1se} or \verb{2se}. Default is \code{ci}.}
 

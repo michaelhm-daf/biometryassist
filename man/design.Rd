@@ -120,10 +120,6 @@ des.out <- design(type = "crossed:rcbd", treatments = c(3, 2),
                   brows = 6, bcols = 1,
                   seed = 42, fac.sep = c(":", "_"))
 
-# Factorial Design (Nested, Latin Square)
-trt <- c("A1", "A2", "A3", "A4", "B1", "B2", "B3")
-des.out <- design(type = "lsd", treatments = trt,
-                  nrows = 7, ncols = 7, seed = 42)
 
 # Split plot design
 des.out <- design(type = "split", treatments = c("A", "B"), sub_treatments = 1:4,
