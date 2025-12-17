@@ -282,7 +282,7 @@ multiple_comparisons <- function(model.obj,
     }
 
     # Add attributes
-    pp <- add_attributes(pp, ylab, crit_val, aliased)
+    pp <- add_attributes(pp, ylab, crit_val, aliased, method)
 
     # Plot if requested
     if (plot) {
@@ -553,7 +553,7 @@ format_output <- function(pp, descending, vars, decimals) {
     return(pp)
 }
 
-add_attributes <- function(pp, ylab, crit_val, aliased_names) {
+add_attributes <- function(pp, ylab, crit_val, aliased_names, method) {
     # # If there are brackets in the label, grab the text from inside
     # if (is.call(ylab)) {
     #     ylab <- as.character(ylab)[2]
@@ -569,11 +569,27 @@ add_attributes <- function(pp, ylab, crit_val, aliased_names) {
     }
 
     # Add critical value as attribute
-    if (stats::var(as.vector(crit_val), na.rm = TRUE) < 1e-10) {
+    if(tolower(method)=="tukey"){
+      if (stats::var(as.vector(crit_val), na.rm = TRUE) < 1e-10) {
         attr(pp, 'HSD') <- crit_val[1, 2]
-    } else {
+      } else {
         attr(pp, 'HSD') <- crit_val
-        attr(pp, 'average HSD') <- mean(crit_val, na.rm=TRUE)
+        #attr(pp, 'average HSD') <- mean(crit_val, na.rm=TRUE)
+      }
+    } else if(tolower(method)=="lsd"){
+      if (stats::var(as.vector(crit_val), na.rm = TRUE) < 1e-10) {
+        attr(pp, 'LSD') <- crit_val[1, 2]
+      } else {
+        attr(pp, 'LSD') <- crit_val
+        attr(pp, 'average LSD') <- mean(crit_val, na.rm=TRUE)
+      }
+    } else if(tolower(method)=="bonferroni"){
+      if (stats::var(as.vector(crit_val), na.rm = TRUE) < 1e-10) {
+        attr(pp, 'B-LSD') <- crit_val[1, 2]
+      } else {
+        attr(pp, 'B-LSD') <- crit_val
+        attr(pp, 'average B-LSD') <- mean(crit_val, na.rm=TRUE)
+      }
     }
 
     return(pp)

@@ -179,14 +179,17 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
   # convert pair-wise comparison table to a data framee
   aov_compare <- as.data.frame(aov_compare)
   
+  # Convert emmeans predictions to a data frame
+  pred.out <- as.data.frame(pred.out)
+  
   # Extract standard errors
   # define SED matrix
-  sed <- matrix(NA, nrow=dim(aov_df)[1], ncol=dim(aov_df)[1])
+  sed <- matrix(NA, nrow=dim(pred.out)[1], ncol=dim(pred.out)[1])
   # obtain residual degrees of freedom matrix
-  ndf <- matrix(NA, nrow=dim(aov_df)[1], ncol=dim(aov_df)[1])
+  ndf <- matrix(NA, nrow=dim(pred.out)[1], ncol=dim(pred.out)[1])
   k <- 1 # define counter k
-  for(i in 1:(dim(aov_df)[1]-1) ){
-    for (j in (i+1):dim(aov_df)[1]){
+  for(i in 1:(dim(pred.out)[1]-1) ){
+    for (j in (i+1):dim(pred.out)[1]){
       sed[i,j] <- aov_compare$SE[k]
       sed[j,i] <- sed[i,j]
       ndf[i,j] <- aov_compare$df[k]
@@ -194,9 +197,7 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
       k <- k+1
     }
   }
-  # Add in row and column headings
-  
-  pred.out <- as.data.frame(pred.out)
+
   # Remove columns with upper and lower confidence intervals
   pred.out <- pred.out[, !grepl("CL", names(pred.out))]
   # Remove columns with degrees of freedom
