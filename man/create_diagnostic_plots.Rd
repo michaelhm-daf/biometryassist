@@ -4,7 +4,7 @@
 \alias{create_diagnostic_plots}
 \title{Create diagnostic plots}
 \usage{
-create_diagnostic_plots(group_residuals, axes.size, label.size)
+create_diagnostic_plots(group_residuals, res.type, axes.size, label.size)
 }
 \arguments{
 \item{group_residuals}{Data frame with residuals and fitted values}

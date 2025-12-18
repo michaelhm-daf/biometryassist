@@ -2,7 +2,8 @@
 #'
 #' Produces plots of residuals for assumption checking of linear (mixed) models.
 #'
-#' @param model.obj An `aov`, `lm`, `lme` ([nlme::lme()]), `lmerMod` ([lme4::lmer()]), `asreml` or `mmer` (sommer) model object.
+#' @param model.obj An `aov`, `aovlist`, `lm`, `lme` ([nlme::lme()]), `lmerMod` ([lme4::lmer()]), `asreml` or `mmer` (sommer) model object.
+#' @param res.type A character value for whether the residuals displayed are `simple` or `standardised`. Default is `standardised`.
 #' @param shapiro (Logical) Display the Shapiro-Wilk test of normality on the plot? This test is unreliable for larger numbers of observations and will not work with n >= 5000 so will be omitted from any plots.
 #' @param call (Logical) Display the model call on the plot?
 #' @param axes.size A numeric value for the size of the axes label font size in points.
@@ -23,7 +24,7 @@
 #' resplot(dat.aov)
 #' resplot(dat.aov, call = TRUE)
 #' @export
-resplot <- function(model.obj, shapiro = TRUE, call = FALSE,
+resplot <- function(model.obj, res.type="standardised", shapiro = TRUE, call = FALSE,
                     label.size = 10, axes.size = 10, call.size = 9,
                     onepage = FALSE, onepage_cols = 3, mod.obj) {
 
@@ -47,7 +48,7 @@ resplot <- function(model.obj, shapiro = TRUE, call = FALSE,
                           sum(!is.na(group_residuals$residuals))))
 
         # Create individual plots
-        plots <- create_diagnostic_plots(group_residuals, axes.size, label.size)
+        plots <- create_diagnostic_plots(group_residuals, res.type, axes.size, label.size)
 
         # Handle Shapiro-Wilk test
         shapiro_result <- NULL
@@ -82,47 +83,87 @@ resplot <- function(model.obj, shapiro = TRUE, call = FALSE,
 #' @param axes.size Size of axes labels
 #' @param label.size Size of plot labels
 #' @keywords internal
-create_diagnostic_plots <- function(group_residuals, axes.size, label.size) {
+create_diagnostic_plots <- function(group_residuals, res.type, axes.size, label.size) {
 
     # Set histogram x axis width
-    max_val <- max(abs(group_residuals$stdres), na.rm = TRUE)
-    max_val <- ifelse(max_val > 3.5, max_val+0.25, 3.5)
-    breaks_seq <- seq(0.25, max_val, by = 0.5)
-    breaks_seq <- c(-rev(breaks_seq), breaks_seq)
 
-    a <- ggplot2::ggplot(data = group_residuals, mapping = ggplot2::aes(x = stdres)) +
-        ggplot2::geom_histogram(
+    if(tolower(res.type)=="simple"){
+      a <- ggplot2::ggplot(data = group_residuals, mapping = ggplot2::aes(x = residuals)) +
+            ggplot2::geom_histogram(
+             bins = ifelse(nrow(group_residuals) < 31, 7, 11),  
+              fill = "aquamarine3",
+              colour = "black"
+          ) +
+        ggplot2::labs(y = "Frequency", x = "Residual") +
+        ggplot2::theme_bw(base_size = axes.size)
+      
+      b <- ggplot2::ggplot(group_residuals, ggplot2::aes(sample = residuals)) +
+            ggplot2::labs(y = "Residual", x = "Theoretical")
+      
+      c <- ggplot2::ggplot(
+        data = group_residuals,
+        mapping = ggplot2::aes(x = fitted, y = residuals)
+        ) + 
+          ggplot2::labs(y = "Residual", x = "Fitted Value")
+    } else if(tolower(res.type)%in%c("standardised","standardized")){
+      # Set histogram x axis width
+      max_val <- max(abs(group_residuals$stdres), na.rm = TRUE)
+      max_val <- ifelse(max_val > 3.5, max_val+0.25, 3.5)
+      breaks_seq <- seq(0.25, max_val, by = 0.5)
+      breaks_seq <- c(-rev(breaks_seq), breaks_seq)
+      
+      a <- ggplot2::ggplot(data = group_residuals, mapping = ggplot2::aes(x = stdres)) +
+           ggplot2::geom_histogram(
             bins = ifelse(nrow(group_residuals) < 31, 7, 11),
             fill = "aquamarine3",
             colour = "black",
             breaks = breaks_seq
         ) +
-        ggplot2::theme_bw(base_size = axes.size) +
-        ggplot2::labs(y = "Frequency", x = "Standardised Residual")
+        ggplot2::labs(y = "Frequency", x = "Standardised Residual") +
+        ggplot2::theme_bw(base_size = axes.size)
+      
+      b <- ggplot2::ggplot(group_residuals, ggplot2::aes(sample = stdres)) +
+            ggplot2::labs(y = "Standardised Residual", x = "Theoretical")
+      
+      c <- ggplot2::ggplot(
+        data = group_residuals,
+        mapping = ggplot2::aes(x = fitted, y = stdres)
+      ) + 
+          ggplot2::labs(y = "Standardised Residual", x = "Fitted Value")
+    } else {
+      stop("Residuals type must be one of either `simple` or `standardised`")
+    }
+    
+    #a <- ggplot2::ggplot(data = group_residuals, mapping = ggplot2::aes(x = stdres)) +
+    # a <- a +  ggplot2::geom_histogram(
+    #         bins = ifelse(nrow(group_residuals) < 31, 7, 11),
+    #         fill = "aquamarine3",
+    #         colour = "black",
+    #         breaks = breaks_seq
+    #     ) +
+    #     ggplot2::theme_bw(base_size = axes.size)
 
-    b <- ggplot2::ggplot(group_residuals, ggplot2::aes(sample = stdres)) +
-        ggplot2::geom_qq(
+    #b <- ggplot2::ggplot(group_residuals, ggplot2::aes(sample = stdres)) +
+    b <- b +ggplot2::geom_qq(
             colour = "black",
             fill = "aquamarine3",
             size = 2,
             shape = 21
         ) +
         ggplot2::geom_qq_line() +
-        ggplot2::theme_bw(base_size = axes.size) +
-        ggplot2::labs(y = "Standardised Residual", x = "Theoretical")
+        ggplot2::theme_bw(base_size = axes.size)
 
-    c <- ggplot2::ggplot(
-        data = group_residuals,
-        mapping = ggplot2::aes(x = fitted, y = stdres)
-    ) +
-        ggplot2::geom_point(
+    # c <- ggplot2::ggplot(
+    #     data = group_residuals,
+    #     mapping = ggplot2::aes(x = fitted, y = stdres)
+    # ) +
+     c <- c + ggplot2::geom_point(
             colour = "black",
             fill = "aquamarine3",
             size = 2,
             shape = 21
         ) +
-        ggplot2::theme_bw(base_size = axes.size) +
-        ggplot2::labs(y = "Standardised Residual", x = "Fitted Value")
+        ggplot2::theme_bw(base_size = axes.size)
 
     list(histogram = a, qq = b, scatter = c)
 }

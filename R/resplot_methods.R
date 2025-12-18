@@ -8,7 +8,7 @@ extract_model_info <- function(model.obj, call = FALSE) {
 
 #' @keywords internal
 extract_model_info.default <- function(model.obj, call = FALSE) {
-    supported_types <- c("aov", "lm", "lme", "lmerMod", "lmerModLmerTest",
+    supported_types <- c("aov", "aovlist", "lm", "lme", "lmerMod", "lmerModLmerTest",
                          "asreml", "mmer", "mmes", "art")
     stop("model.obj must be a linear (mixed) model object. Currently supported model types are: ",
          paste(supported_types, collapse = ", "), call. = FALSE)
@@ -166,4 +166,36 @@ extract_model_info.art <- function(model.obj, call = FALSE) {
         k = k,
         model_call = model_call
     )
+}
+
+extract_model_info.aovlist <- function(model.obj, call = FALSE) {
+  # Obtain projection matrix
+  # Note that setting onedf=FALSE ensure each column is a factor/term (as opposed to a factor level)
+  proj_list <- stats::proj(model.obj, onedf=FALSE)
+  # use cbind to combine projection matrices for each stratum into a single matrix
+  proj_mat <- matrix(0, nrow=dim(proj_list[[1]])[1], ncol=0)
+  for(i in 1:length(proj_list)){
+    proj_mat <- cbind(proj_mat, proj_list[[i]])
+  }
+  ncols <- dim(proj_mat)[2]
+  # The last row of the projection matrix is the simple residuals for each observation
+  resids <- proj_mat[,ncols]
+  # The sum of all the other columns is the fitted values for each observation
+  fits <- rowSums(proj_mat[, -ncols])
+  k <- length(resids)
+  
+  model_call <- NULL
+  if(call) {
+    model_call <- paste(trimws(deparse(attr(model.obj, "call"), width.cutoff = 50)), collapse = "\n")
+  }
+  
+  output <- list(facet = 1,
+                 facet_name = NULL,
+                 resids = resids,
+                 fits = fits,
+                 k = k,
+                 model_call = model_call
+  )
+  
+  return(output)
 }

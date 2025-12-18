@@ -6,6 +6,7 @@
 \usage{
 resplot(
   model.obj,
+  res.type = "standardised",
   shapiro = TRUE,
   call = FALSE,
   label.size = 10,
@@ -17,7 +18,9 @@ resplot(
 )
 }
 \arguments{
-\item{model.obj}{An \code{aov}, \code{lm}, \code{lme} (\code{\link[nlme:lme]{nlme::lme()}}), \code{lmerMod} (\code{\link[lme4:lmer]{lme4::lmer()}}), \code{asreml} or \code{mmer} (sommer) model object.}
+\item{model.obj}{An \code{aov}, \code{aovlist}, \code{lm}, \code{lme} (\code{\link[nlme:lme]{nlme::lme()}}), \code{lmerMod} (\code{\link[lme4:lmer]{lme4::lmer()}}), \code{asreml} or \code{mmer} (sommer) model object.}
+
+\item{res.type}{A character value for whether the residuals displayed are \code{simple} or \code{standardised}. Default is \code{standardised}.}
 
 \item{shapiro}{(Logical) Display the Shapiro-Wilk test of normality on the plot? This test is unreliable for larger numbers of observations and will not work with n >= 5000 so will be omitted from any plots.}
 
