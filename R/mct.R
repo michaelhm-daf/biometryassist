@@ -12,6 +12,7 @@
 #' @param power Numeric power applied to response variable with power transformation. Default is `NULL`. See Details for more information.
 #' @param decimals Controls rounding of decimal places in output. Default is 2 decimal places.
 #' @param descending Logical (default `FALSE`). Order of the output sorted by the predicted value. If `TRUE`, largest will be first, through to smallest last.
+#' @param display.ci Logical (default `TRUE`). If `FALSE` the confidence interval will not be displayed in the output data frame.
 #' @param groups Logical (default `TRUE`). If `TRUE`, the significance letter groupings will be calculated and displayed. This can get overwhelming for large numbers of comparisons, so can be turned off by setting to `FALSE`.
 #' @param plot Automatically produce a plot of the output of the multiple comparison test? Default is `FALSE`. This is maintained for backwards compatibility, but the preferred method now is to use `autoplot(<multiple_comparisons output>)`. See [biometryassist::autoplot.mct()] for more details.
 #' @param label_height Height of the text labels above the upper error bar on the plot. Default is 0.1 (10%) of the difference between upper and lower error bars above the top error bar.
@@ -201,6 +202,7 @@ multiple_comparisons <- function(model.obj,
                                  power = NULL,
                                  decimals = 2,
                                  descending = FALSE,
+                                 display.ci = TRUE,
                                  groups = TRUE,
                                  plot = FALSE,
                                  label_height = 0.1,
@@ -280,6 +282,11 @@ multiple_comparisons <- function(model.obj,
     if (groups && tolower(int.type) == "ci") {
         check_ci_consistency(pp)
     }
+    
+    # Remove confidence interval if requested
+    if(display.ci==FALSE){
+      pp <- pp[, !(names(pp) %in% c("ci", "low", "up"))]
+    }
 
     # Add attributes
     pp <- add_attributes(pp, ylab, crit_val, aliased, method)
@@ -288,7 +295,7 @@ multiple_comparisons <- function(model.obj,
     if (plot) {
         print(autoplot(pp))
     }
-
+    
     return(pp)
 }
 

@@ -15,6 +15,7 @@ multiple_comparisons(
   power = NULL,
   decimals = 2,
   descending = FALSE,
+  display.ci = TRUE,
   groups = TRUE,
   plot = FALSE,
   label_height = 0.1,
@@ -48,6 +49,8 @@ multiple_comparisons(
 \item{decimals}{Controls rounding of decimal places in output. Default is 2 decimal places.}
 
 \item{descending}{Logical (default \code{FALSE}). Order of the output sorted by the predicted value. If \code{TRUE}, largest will be first, through to smallest last.}
+
+\item{display.ci}{Logical (default \code{TRUE}). If \code{FALSE} the confidence interval will not be displayed in the output data frame.}
 
 \item{groups}{Logical (default \code{TRUE}). If \code{TRUE}, the significance letter groupings will be calculated and displayed. This can get overwhelming for large numbers of comparisons, so can be turned off by setting to \code{FALSE}.}
 
