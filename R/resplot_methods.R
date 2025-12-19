@@ -168,6 +168,7 @@ extract_model_info.art <- function(model.obj, call = FALSE) {
     )
 }
 
+#' @keywords internal
 extract_model_info.aovlist <- function(model.obj, call = FALSE) {
   # Obtain projection matrix
   # Note that setting onedf=FALSE ensure each column is a factor/term (as opposed to a factor level)

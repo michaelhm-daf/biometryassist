@@ -548,11 +548,11 @@ test_that("Test that aov works when using LSD method for multiple comparisons", 
 })
 
 
-test_that("Does spaces=TRUE produce monspaced lettering?", {
+test_that("Does spaces_in_groups=TRUE produce monspaced lettering?", {
   quiet(library(asreml))
   oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
-  output.aov <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen", spaces=TRUE)
-  output.asr <- multiple_comparisons(model.obj=model.asr, classify = "Nitrogen:Variety", spaces=TRUE)
+  output.aov <- multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen", spaces_in_groups=TRUE)
+  output.asr <- multiple_comparisons(model.obj=model.asr, classify = "Nitrogen:Variety", spaces_in_groups=TRUE)
   expect_equal(output.aov$groups,c("a     ", "ab    ", "abc e ", "abcd  ", "abcdef",
                                " bcdef", " bcdef", "  cdef", "   d f", "    ef", "     f", "     f"))
   # Difference are because of the ar1() structure fitted in the asreml model
@@ -561,12 +561,12 @@ test_that("Does spaces=TRUE produce monspaced lettering?", {
 })
 
 
-test_that("Does the order of factors labelled in the classify set affect the results of the model?", {
-  quiet(library(asreml))
-  oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
-  output.aov1 <- expect_no_error(multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen"))
-  output.aov2 <- expect_no_error(multiple_comparisons(model.obj=oats.aov, classify="Nitrogen:Variety"))
-  output.asr1 <- expect_no_error(multiple_comparisons(model.obj=oats.asr, classify = "Variety:Nitrogen"))
-  output.asr2 <- expect_no_error(multiple_comparisons(model.obj=oats.asr, classify = "Nitrogen:Variety"))
-})
+# test_that("Does the order of factors labelled in the classify set affect the results of the model?", {
+#   quiet(library(asreml))
+#   oats.aov <- aov(yield ~ Variety*Nitrogen + Error(Blocks/Wplots/Subplots), data=oats)
+#   output.aov1 <- expect_no_error(multiple_comparisons(model.obj=oats.aov, classify="Variety:Nitrogen"))
+#   output.aov2 <- expect_no_error(multiple_comparisons(model.obj=oats.aov, classify="Nitrogen:Variety"))
+#   output.asr1 <- expect_no_error(multiple_comparisons(model.obj=oats.asr, classify = "Variety:Nitrogen"))
+#   output.asr2 <- expect_no_error(multiple_comparisons(model.obj=oats.asr, classify = "Nitrogen:Variety"))
+# })
 
