@@ -123,8 +123,8 @@ autoplot.mct <- function(object, size = 4, label_height = 0.1,
     subset_df <- pred_df[1,]
     plot <- plot + ggplot2::geom_errorbar(data=subset_df, 
                                           aes(x = {{ classify }},
-                                              ymin = .data[["predicted.value"]] - 0.5 * mean(attr(ladybird_lmer_pred2, "HSD"),na.rm=TRUE) , 
-                                              ymax = .data[["predicted.value"]] + 0.5 * mean(attr(ladybird_lmer_pred2, "HSD"),na.rm=TRUE) ), 
+                                              ymin = .data[["predicted.value"]] - 0.5 * mean(attr(object, "HSD"),na.rm=TRUE) , 
+                                              ymax = .data[["predicted.value"]] + 0.5 * mean(attr(object, "HSD"),na.rm=TRUE) ), 
                                           width = 0.2#, 
                                           #position = ggplot2::position_dodge(width = 0.5) # does not work for some reason
     )
@@ -133,8 +133,8 @@ autoplot.mct <- function(object, size = 4, label_height = 0.1,
     subset_df <- pred_df[1,]
     plot <- plot + ggplot2::geom_errorbar(data=subset_df, 
                                           aes(x = {{ classify }},
-                                              ymin = .data[["predicted.value"]] - 0.5 * mean(attr(ladybird_lmer_pred2, "LSD"),na.rm=TRUE) , 
-                                              ymax = .data[["predicted.value"]] + 0.5 * mean(attr(ladybird_lmer_pred2, "LSD"),na.rm=TRUE) ), 
+                                              ymin = .data[["predicted.value"]] - 0.5 * mean(attr(object, "LSD"),na.rm=TRUE) , 
+                                              ymax = .data[["predicted.value"]] + 0.5 * mean(attr(object, "LSD"),na.rm=TRUE) ), 
                                           width = 0.2#, 
                                           #position = ggplot2::position_dodge(width = 0.5) # does not work for some reason
     )
