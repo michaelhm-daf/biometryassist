@@ -54,7 +54,7 @@ autoplot(object, ...)
 
 \item{type}{A string specifying the type of plot to display. The default of 'point' will display a point estimate with error bars. The alternative, 'column' (or 'col'), will display a column graph with error bars.}
 
-\item{errorbar_type}{A character (default is "ci") that indicates what the errorbars in the plot represent. Current options are 95\% confidence interval ("ci") or Tukeys (average) HSD value ("hsd")}
+\item{errorbar_type}{A character (default is "ci") that indicates what the errorbars in the plot represent. Current options are 95\% confidence interval ("ci"), Tukeys (average) HSD value ("hsd"), or LSD value ("lsd")}
 
 \item{include_errorbar}{Logical (default 'TRUE') indicating whether to include errorbars when plotting the predicted values from a multiple comparisons test}
 
