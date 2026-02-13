@@ -60,6 +60,14 @@ autoplot.mct <- function(object, size = 4, label_height = 0.1,
     }
   }
   
+  # Force trans_scale = TRUE if errorbar_type is "lsd"
+  if (tolower(errorbar_type) == "lsd" && include_errorbar == TRUE) {
+    if (!trans_scale) {
+      trans_scale <- TRUE  # Force trans_scale to TRUE
+      warning("The error bar is an average LSD value and not a confidence interval.")
+    }
+  }
+  
   # Extract the predictions data frame from the mct object
   # For new structure: object is a list with $predictions
   # For backward compatibility: also handle old structure where object is a data frame
@@ -141,11 +149,32 @@ autoplot.mct <- function(object, size = 4, label_height = 0.1,
   }
   
   if( ("groups" %in% colnames(pred_df)) && (include_lettering==TRUE) ) {
-    # Calculate outside of aes()
-    y_pos <- ifelse(pred_df$up > pred_df$low, pred_df$up, pred_df$low)
-    nudge_val <- ifelse(abs(label_height) <= 1,
-                        abs(pred_df$up - pred_df$low) * label_height,
-                        label_height)
+    
+    if(errorbar_type=="ci"){
+      # Calculate outside of aes()
+      y_pos <- ifelse(pred_df$up > pred_df$low, pred_df$up, pred_df$low)
+      nudge_val <- ifelse(abs(label_height) <= 1,
+                          abs(pred_df$up - pred_df$low) * label_height,
+                          label_height)
+    }
+    
+    else if(errorbar_type=="lsd") {
+      y_pos <- pred_df$predicted.value
+      # move the first predicted value to be above the HSD value
+      y_pos[1] <- pred_df$predicted.value[1] + 0.5*mean(attr(object, "LSD"),na.rm=TRUE)
+      nudge_val <- ifelse(abs(label_height) <= 1,
+                          2*mean(attr(object, "LSD"),na.rm=TRUE) * label_height,
+                          label_height)
+    }
+    
+    else if(errorbar_type=="hsd") {
+      y_pos <- pred_df$predicted.value
+      # move the first predicted value to be above the HSD value
+      y_pos[1] <- pred_df$predicted.value[1] + 0.5*mean(attr(object, "HSD"),na.rm=TRUE)
+      nudge_val <- ifelse(abs(label_height) <= 1,
+                          2*mean(attr(object, "HSD"),na.rm=TRUE) * label_height,
+                          label_height)
+    }
     
     plot <- plot +
       ggplot2::geom_text(ggplot2::aes(y = y_pos, label = .data[["groups"]]),

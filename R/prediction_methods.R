@@ -221,9 +221,15 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
 
   
   # Get response variable for plot label
-  formula_text <- deparse(stats::formula(model.obj[[1]]))
-  ylab <- strsplit(formula_text, "~")[[1]][1]
-  ylab <- trimws(ylab)
+  if(class(model.obj) %in% c("lmerMod","lmerModLmerTest")){
+    formula_text <- deparse(stats::formula(model.obj))
+    ylab <- strsplit(formula_text, "~")[[1]][1]
+    ylab <- trimws(ylab)
+  } else {
+    formula_text <- deparse(stats::formula(model.obj[[1]])) #breaks for lme object!!!! ----
+    ylab <- strsplit(formula_text, "~")[[1]][1]
+    ylab <- trimws(ylab)
+  }
   
   return(list(
     predictions = pp,
@@ -247,8 +253,9 @@ get_predictions.listof <- function(model.obj, classify, ...) {
 #' @keywords internal
 get_predictions.lmerMod <- function(model.obj, classify, ...) {
     # Reuse lm method for common functionality
-    result <- get_predictions.lm(model.obj, classify, ...)
+    #result <- get_predictions.lm(model.obj, classify, ...)
 
+    result <- get_predictions.aovlist(model.obj, classify, ...)
     # Override ylab extraction for lmerMod
     # result$ylab <- model.obj@call[[2]][[2]]
 
