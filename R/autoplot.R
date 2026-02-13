@@ -51,22 +51,7 @@ autoplot.mct <- function(object, size = 4, label_height = 0.1,
   stopifnot(inherits(object, "mct"))
   
   rlang::check_dots_used()
-  
-  # Force trans_scale = TRUE if errorbar_type is "hsd"
-  if (tolower(errorbar_type) == "hsd" && include_errorbar == TRUE) {
-    if (!trans_scale) {
-      trans_scale <- TRUE  # Force trans_scale to TRUE
-      warning("The error bar is an average HSD value and not a confidence interval.")
-    }
-  }
-  
-  # Force trans_scale = TRUE if errorbar_type is "lsd"
-  if (tolower(errorbar_type) == "lsd" && include_errorbar == TRUE) {
-    if (!trans_scale) {
-      trans_scale <- TRUE  # Force trans_scale to TRUE
-      warning("The error bar is an average LSD value and not a confidence interval.")
-    }
-  }
+
   
   # Extract the predictions data frame from the mct object
   # For new structure: object is a list with $predictions
@@ -102,6 +87,22 @@ autoplot.mct <- function(object, size = 4, label_height = 0.1,
   } else {
     0.5
   }
+  
+  # # Force trans_scale = TRUE if errorbar_type is "hsd"
+  # if (tolower(errorbar_type) == "hsd" && include_errorbar == TRUE) {
+  #   if (!trans_scale) {
+  #     trans_scale <- TRUE  # Force trans_scale to TRUE
+  #     warning("The error bar is an average HSD value and not a confidence interval.")
+  #   }
+  # }
+  # 
+  # # Force trans_scale = TRUE if errorbar_type is "lsd"
+  # if (tolower(errorbar_type) == "lsd" && include_errorbar == TRUE) {
+  #   if (!trans_scale) {
+  #     trans_scale <- TRUE  # Force trans_scale to TRUE
+  #     warning("The error bar is an average LSD value and not a confidence interval.")
+  #   }
+  # }
   
   plot <- ggplot2::ggplot(data = pred_df, ggplot2::aes(x = {{ classify }})) +
     ggplot2::theme_bw() +

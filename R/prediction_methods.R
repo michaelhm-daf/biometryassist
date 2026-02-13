@@ -221,7 +221,7 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
 
   
   # Get response variable for plot label
-  if(class(model.obj) %in% c("lmerMod","lmerModLmerTest")){
+  if(class(model.obj)[1] %in% c("lmerMod","lmerModLmerTest")){
     formula_text <- deparse(stats::formula(model.obj))
     ylab <- strsplit(formula_text, "~")[[1]][1]
     ylab <- trimws(ylab)
