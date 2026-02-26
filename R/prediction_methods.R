@@ -226,7 +226,7 @@ get_predictions.aovlist <- function(model.obj, classify, ...) {
     ylab <- strsplit(formula_text, "~")[[1]][1]
     ylab <- trimws(ylab)
   } else {
-    formula_text <- deparse(stats::formula(model.obj[[1]])) #breaks for lme object!!!! ----
+    formula_text <- deparse(stats::formula(model.obj[[1]]))
     ylab <- strsplit(formula_text, "~")[[1]][1]
     ylab <- trimws(ylab)
   }
