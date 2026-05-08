@@ -220,3 +220,49 @@ is_light_colour <- function(colour) {
   luminance <- (0.299 * rgb_vals[1, ] + 0.587 * rgb_vals[2, ] + 0.114 * rgb_vals[3, ]) / 255
   return(luminance > 0.5)
 }
+
+#' Output residuals from a multi-stratum ANOVA
+#'
+#' Internal helper function calculate the residuals from a multi-stratum ANOVA implemented using aov.
+#'
+#' @param model.obj An `aovlist` model object.
+#'
+#' @keywords internal
+residuals.aovlist <- function(model.obj){
+  # Obtain projection matrix
+  # Note that setting onedf=FALSE ensures each column is a factor/term (as opposed to a factor level)
+  proj_list <- stats::proj(model.obj, onedf=FALSE)
+  # use cbind to combine projection matrices for each stratum into a single matrix
+  proj_mat <- matrix(0, nrow=dim(proj_list[[1]])[1], ncol=0)
+  for(i in 1:length(proj_list)){
+    proj_mat <- cbind(proj_mat, proj_list[[i]])
+  }
+  ncols <- dim(proj_mat)[2]
+  # The last row of the projection matrix is the simple residuals for each observation
+  resids <- proj_mat[,ncols]
+  return(resids)
+}
+
+
+#' Output the fitted values from a multi-stratum ANOVA
+#'
+#' Internal helper function calculate the fitted values from a multi-stratum ANOVA implemented using aov.
+#'
+#' @param model.obj An `aovlist` model object.
+#'
+#' @keywords internal
+fitted.aovlist <- function(model.obj){
+  # Obtain projection matrix
+  # Note that setting onedf=FALSE ensures each column is a factor/term (as opposed to a factor level)
+  proj_list <- stats::proj(model.obj, onedf=FALSE)
+  # use cbind to combine projection matrices for each stratum into a single matrix
+  proj_mat <- matrix(0, nrow=dim(proj_list[[1]])[1], ncol=0)
+  for(i in 1:length(proj_list)){
+    proj_mat <- cbind(proj_mat, proj_list[[i]])
+  }
+  ncols <- dim(proj_mat)[2]
+  # The sum of all the other columns is the fitted value for each observation
+  fits <- rowSums(proj_mat[, -ncols])
+  return(fits)
+}
+

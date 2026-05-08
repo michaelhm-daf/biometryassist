@@ -170,19 +170,11 @@ extract_model_info.art <- function(model.obj, call = FALSE) {
 
 #' @keywords internal
 extract_model_info.aovlist <- function(model.obj, call = FALSE) {
-  # Obtain projection matrix
-  # Note that setting onedf=FALSE ensure each column is a factor/term (as opposed to a factor level)
-  proj_list <- stats::proj(model.obj, onedf=FALSE)
-  # use cbind to combine projection matrices for each stratum into a single matrix
-  proj_mat <- matrix(0, nrow=dim(proj_list[[1]])[1], ncol=0)
-  for(i in 1:length(proj_list)){
-    proj_mat <- cbind(proj_mat, proj_list[[i]])
-  }
-  ncols <- dim(proj_mat)[2]
+
   # The last row of the projection matrix is the simple residuals for each observation
-  resids <- proj_mat[,ncols]
+  resids <- residuals.aovlist(model.obj)
   # The sum of all the other columns is the fitted values for each observation
-  fits <- rowSums(proj_mat[, -ncols])
+  fits <- fitted.aovlist(model.obj)
   k <- length(resids)
   
   model_call <- NULL
