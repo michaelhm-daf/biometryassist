@@ -227,7 +227,6 @@ is_light_colour <- function(colour) {
 #'
 #' @param model.obj An `aovlist` model object.
 #'
-#' @keywords internal
 residuals.aovlist <- function(model.obj){
   # Obtain projection matrix
   # Note that setting onedf=FALSE ensures each column is a factor/term (as opposed to a factor level)
@@ -250,7 +249,6 @@ residuals.aovlist <- function(model.obj){
 #'
 #' @param model.obj An `aovlist` model object.
 #'
-#' @keywords internal
 fitted.aovlist <- function(model.obj){
   # Obtain projection matrix
   # Note that setting onedf=FALSE ensures each column is a factor/term (as opposed to a factor level)

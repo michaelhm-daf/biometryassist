@@ -12,4 +12,3 @@
 \description{
 Internal helper function calculate the fitted values from a multi-stratum ANOVA implemented using aov.
 }
-\keyword{internal}
